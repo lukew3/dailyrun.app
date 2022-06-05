@@ -17,6 +17,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     firstname = db.Column(db.String)
     lastname = db.Column(db.String)
+    profile_pic = db.Column(db.String)
     cur_streak = db.Column(db.Integer, default=0)
     last_updated = db.Column(db.DateTime, default=db.func.now())
     # Strava data
@@ -82,8 +83,11 @@ def exchange_token():
     user_data = json.loads(r.content)
     if not User.query.filter_by(strava_id=user_data['athlete']['id']).first(): 
         # Create user if not already existing
+        pfp = user_data['athlete']['profile']
+        if pfp[-9:] == 'large.jpg': pfp = pfp[:-9] + 'original.jpg'
         new_user = User(firstname=user_data['athlete']['firstname'],
                 lastname=user_data['athlete']['lastname'],
+                profile_pic=pfp,
                 strava_id=user_data['athlete']['id'],
                 refresh_token=user_data['refresh_token'],
                 access_token=user_data['access_token'],
