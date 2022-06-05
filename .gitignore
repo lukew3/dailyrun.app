@@ -2,3 +2,5 @@ venv/
 config.json
 *.db
 *.sh
+static/compatible_with_strava_buttons/ 
+static/powered_by_strava_buttons/
