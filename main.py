@@ -35,9 +35,9 @@ def home():
     strava_id = request.cookies.get('strava_id')
     if strava_id:
         user = User.query.filter_by(strava_id=int(strava_id)).first()
-        return render_template('home.html', fullname=user.firstname + ' ' + user.lastname, streak=user.cur_streak)
-    else:
-        return render_template('landing.html', authLink=get_oauth_url())
+        if user:
+            return render_template('home.html', fullname=user.firstname + ' ' + user.lastname, streak=user.cur_streak)
+    return render_template('landing.html', authLink=get_oauth_url())
 
 def streak_from_activities(user_strava_id):
     user = User.query.filter_by(strava_id=user_strava_id).first()
@@ -70,35 +70,30 @@ def invalid_permissions():
 
 @app.route('/exchange_token')
 def exchange_token():
-    state = request.args.get('state')
-    code = request.args.get('code')
-    scope = request.args.get('scope')
-    if scope != 'read,activity:read':
+    if request.args.get('scope') != 'read,activity:read':
         return redirect('/invalid_permissions')
     # Get user tokens and setup user
-    res = requests.post('https://www.strava.com/oauth/token', params={
+    r = requests.post('https://www.strava.com/oauth/token', params={
             'client_id': cfg['CLIENT_ID'],
             'client_secret': cfg['CLIENT_SECRET'],
-            'code': code,
+            'code': request.args.get('code'),
             'grant_type': 'authorization_code'
         })
-    user_data = json.loads(res.content)
-    if User.query.filter_by(strava_id=user_data['athlete']['id']).first(): 
-        response = make_response(redirect('/'))
-        response.set_cookie('strava_id', str(user_data['athlete']['id']).encode())
-        return response
-    new_user = User(firstname=user_data['athlete']['firstname'],
-            lastname=user_data['athlete']['lastname'],
-            strava_id=user_data['athlete']['id'],
-            refresh_token=user_data['refresh_token'],
-            access_token=user_data['access_token'],
-            access_token_exp_date=datetime.datetime.fromtimestamp(user_data['expires_at'])
-        )
-    db.session.add(new_user)
-    db.session.commit()
-    streak_from_activities(new_user.strava_id)
+    user_data = json.loads(r.content)
+    if not User.query.filter_by(strava_id=user_data['athlete']['id']).first(): 
+        # Create user if not already existing
+        new_user = User(firstname=user_data['athlete']['firstname'],
+                lastname=user_data['athlete']['lastname'],
+                strava_id=user_data['athlete']['id'],
+                refresh_token=user_data['refresh_token'],
+                access_token=user_data['access_token'],
+                access_token_exp_date=datetime.datetime.fromtimestamp(user_data['expires_at'])
+            )
+        db.session.add(new_user)
+        db.session.commit()
+        streak_from_activities(new_user.strava_id)
     response = make_response(redirect('/'))
-    response.set_cookie('strava_id', str(new_user.strava_id).encode())
+    response.set_cookie('strava_id', str(user_data['athlete']['id']).encode())
     return response
 
 if __name__ == '__main__':
