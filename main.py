@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 import json
 import requests
 import datetime
+import pytz
 
 with open('config.json', 'r') as config_file:
     cfg = json.load(config_file)
@@ -38,7 +39,7 @@ def home():
     else:
         return render_template('landing.html', authLink=get_oauth_url())
 
-def get_new_user_streak(user_strava_id):
+def streak_from_activities(user_strava_id):
     user = User.query.filter_by(strava_id=user_strava_id).first()
     r = requests.get('https://www.strava.com/api/v3/athlete/activities', headers={
             'Authorization': f'Bearer {user.access_token}'
@@ -48,11 +49,14 @@ def get_new_user_streak(user_strava_id):
         })
     data = json.loads(r.content)
     streak = 0
-    recent_time = datetime.datetime.now() # the time of the last processed activity
+    recent_time = datetime.datetime.now(tz=pytz.timezone(data[0]['timezone'].split()[1])) # the time of the last processed activity
     for activity in data:
-        prev_time = datetime.datetime.fromisoformat(activity['start_date'][:-1]) # the time of the activity being processed now
-        if recent_time - datetime.timedelta(hours=48) < prev_time: # may not be the best way to tell if in streak
+        prev_time = datetime.datetime.fromisoformat(activity['start_date_local'][:-1]) # the time of the activity being processed now
+        if (recent_time - datetime.timedelta(hours=24)).date() == prev_time.date():
             streak += 1
+            recent_time = prev_time
+        elif recent_time.date() == prev_time.date():
+            # Don't increment streak if 2+ activities recorded in the same day
             recent_time = prev_time
         else:
             break
@@ -86,7 +90,7 @@ def exchange_token():
         )
     db.session.add(new_user)
     db.session.commit()
-    get_new_user_streak(new_user.strava_id)
+    streak_from_activities(new_user.strava_id)
     response = make_response(redirect('/'))
     response.set_cookie('strava_id', str(new_user.strava_id).encode())
     return response
