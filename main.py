@@ -27,16 +27,38 @@ class User(db.Model):
 db.create_all()
 
 def get_oauth_url():
-    return f"http://www.strava.com/oauth/authorize?client_id={cfg['CLIENT_ID']}&response_type=code&redirect_uri=https://{cfg['DOMAIN']}/exchange_token&approval_prompt=force&scope=read"
+    return f"http://www.strava.com/oauth/authorize?client_id={cfg['CLIENT_ID']}&response_type=code&redirect_uri=https://{cfg['DOMAIN']}/exchange_token&approval_prompt=force&scope=activity:read"
 
 @app.route('/')
 def home():
     strava_id = request.cookies.get('strava_id')
     if strava_id:
         user = User.query.filter_by(strava_id=int(strava_id)).first()
-        return render_template('home.html', fullname=user.firstname + ' ' + user.lastname)
+        return render_template('home.html', fullname=user.firstname + ' ' + user.lastname, streak=user.cur_streak)
     else:
         return render_template('landing.html', authLink=get_oauth_url())
+
+def get_new_user_streak(user_strava_id):
+    user = User.query.filter_by(strava_id=user_strava_id).first()
+    r = requests.get('https://www.strava.com/api/v3/athlete/activities', headers={
+            'Authorization': f'Bearer {user.access_token}'
+        }, params={
+            'page': 1,
+            'per_page': 50
+        })
+    data = json.loads(r.content)
+    streak = 0
+    recent_time = datetime.datetime.now() # the time of the last processed activity
+    for activity in data:
+        prev_time = datetime.datetime.fromisoformat(activity['start_date'][:-1]) # the time of the activity being processed now
+        if recent_time - datetime.timedelta(hours=48) < prev_time: # may not be the best way to tell if in streak
+            streak += 1
+            recent_time = prev_time
+        else:
+            break
+    user.cur_streak = streak
+    db.session.commit()
+    print(streak)
 
 @app.route('/exchange_token')
 def exchange_token():
@@ -64,6 +86,7 @@ def exchange_token():
         )
     db.session.add(new_user)
     db.session.commit()
+    get_new_user_streak(new_user.strava_id)
     response = make_response(redirect('/'))
     response.set_cookie('strava_id', str(new_user.strava_id).encode())
     return response
