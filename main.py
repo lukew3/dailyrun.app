@@ -64,11 +64,17 @@ def streak_from_activities(user_strava_id):
     db.session.commit()
     print(streak)
 
+@app.route('/invalid_permissions')
+def invalid_permissions():
+    return render_template('invalid_permissions.html')
+
 @app.route('/exchange_token')
 def exchange_token():
     state = request.args.get('state')
     code = request.args.get('code')
     scope = request.args.get('scope')
+    if scope != 'read,activity:read':
+        return redirect('/invalid_permissions')
     # Get user tokens and setup user
     res = requests.post('https://www.strava.com/oauth/token', params={
             'client_id': cfg['CLIENT_ID'],
