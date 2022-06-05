@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response, redirect
 from flask_sqlalchemy import SQLAlchemy
 import json
 import requests
@@ -31,7 +31,12 @@ def get_oauth_url():
 
 @app.route('/')
 def home():
-    return render_template('home.html', authLink=get_oauth_url())
+    strava_id = request.cookies.get('strava_id')
+    if strava_id:
+        user = User.query.filter_by(strava_id=int(strava_id)).first()
+        return render_template('home.html', fullname=user.firstname + ' ' + user.lastname)
+    else:
+        return render_template('landing.html', authLink=get_oauth_url())
 
 @app.route('/exchange_token')
 def exchange_token():
@@ -46,7 +51,10 @@ def exchange_token():
             'grant_type': 'authorization_code'
         })
     user_data = json.loads(res.content)
-    if User.query.filter_by(strava_id=user_data['athlete']['id']).first(): return '<p>User already exists</p>'
+    if User.query.filter_by(strava_id=user_data['athlete']['id']).first(): 
+        response = make_response(redirect('/'))
+        response.set_cookie('strava_id', str(user_data['athlete']['id']).encode())
+        return response
     new_user = User(firstname=user_data['athlete']['firstname'],
             lastname=user_data['athlete']['lastname'],
             strava_id=user_data['athlete']['id'],
@@ -56,7 +64,9 @@ def exchange_token():
         )
     db.session.add(new_user)
     db.session.commit()
-    return '<p>Account linked</p>'
+    response = make_response(redirect('/'))
+    response.set_cookie('strava_id', str(new_user.strava_id).encode())
+    return response
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
