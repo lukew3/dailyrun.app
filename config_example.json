@@ -3,6 +3,6 @@
 	"CLIENT_SECRET": "myclientsecret",
 	"ACCESS_TOKEN": "myaccesstoken",
 	"REFRESH_TOKEN": "myrefreshtoken",
-	"DOMAIN": "example.com",
+	"DOMAIN": "localhost",
 	"SQLALCHEMY_DATABASE_URI": "sqlite:///./test.db"
 }
