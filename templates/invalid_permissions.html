@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<p>We require activity read access in order to calculate your fitness streak. Please try connecting again and allowing permission to "View data about your activities"</p>
+<p>We require activity read access in order to calculate your fitness streak. Please try connecting again and check "View data about your activities" and "View data about your private activities"</p>
 <p><a href="{{ authLink }}"><img src="{{ url_for('static', filename='connect_with_strava_buttons/orange.svg') }}" alt="Connect with Strava"</p>
 {% endblock %}

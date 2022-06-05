@@ -29,7 +29,7 @@ class User(db.Model):
 db.create_all()
 
 def get_oauth_url():
-    return f"http://www.strava.com/oauth/authorize?client_id={cfg['CLIENT_ID']}&response_type=code&redirect_uri=https://{cfg['DOMAIN']}/exchange_token&approval_prompt=force&scope=activity:read"
+    return f"http://www.strava.com/oauth/authorize?client_id={cfg['CLIENT_ID']}&response_type=code&redirect_uri=https://{cfg['DOMAIN']}/exchange_token&approval_prompt=force&scope=activity:read,activity:read_all"
 
 @app.route('/')
 def home():
@@ -67,11 +67,11 @@ def streak_from_activities(user_strava_id):
 
 @app.route('/invalid_permissions')
 def invalid_permissions():
-    return render_template('invalid_permissions.html')
+    return render_template('invalid_permissions.html', authLink=get_oauth_url())
 
 @app.route('/exchange_token')
 def exchange_token():
-    if request.args.get('scope') != 'read,activity:read':
+    if request.args.get('scope') != 'read,activity:read,activity:read_all':
         return redirect('/invalid_permissions')
     # Get user tokens and setup user
     r = requests.post('https://www.strava.com/oauth/token', params={
