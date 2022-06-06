@@ -37,7 +37,7 @@ def home():
     if strava_id:
         user = User.query.filter_by(strava_id=int(strava_id)).first()
         if user:
-            return render_template('home.html', fullname=user.firstname + ' ' + user.lastname, streak=user.cur_streak)
+            return render_template('home.html', fullname=user.firstname + ' ' + user.lastname, streak=user.cur_streak, pfp_url=user.profile_pic, start_date=user.last_updated.strftime('%b %d, %Y'))
     return render_template('landing.html', authLink=get_oauth_url())
 
 def streak_from_activities(user_strava_id):

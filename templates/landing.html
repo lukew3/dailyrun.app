@@ -1,6 +1,9 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<p>Fitness Streak Tracker Home</p>
-<p><a href="{{ authLink }}"><img src="{{ url_for('static', filename='connect_with_strava_buttons/orange.svg') }}" alt="Connect with Strava"</p>
+<div id="landing_group">
+	<h2>Consistency is Key</h2>
+	<p>Unlock your potential. Track your activity streak by syncing with Strava. Press the button below to get started.</p>
+	<p><a href="{{ authLink }}"><img src="{{ url_for('static', filename='connect_with_strava_buttons/orange.svg') }}" alt="Connect with Strava"></a></p>
+</div>
 {% endblock %}

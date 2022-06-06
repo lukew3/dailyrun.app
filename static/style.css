@@ -1,0 +1,82 @@
+* {
+	color: #ECECEC;
+	font-family: 'Roboto', sans-serif;
+	text-decoration: none;
+}
+html {
+	background-color: #2D2D2D;
+}
+#powered_by_strava_svg {
+	position: absolute;
+	width: 150px;
+	bottom: 10px;
+	right: 10px;
+}
+
+/* Landing */
+#landing_group {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 40%;
+	min-width: 350px;
+	margin: auto;
+	margin-top: 20%;
+}
+#landing_group * {
+	text-align: center;
+}
+
+/* Home */
+#streak_card {
+	width: 460px;
+	height: 460px;
+	margin: auto;
+	margin-top: 20%;
+	border: solid #ECECEC 1px;
+	padding: 20px;
+	border-radius: 10px;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	background-color: #202020;
+}
+#streak_card * {
+	margin: 0;
+}
+#card_brandname {
+	font-size: 14pt;
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+#card_pfp {
+	align-self: center;
+	width: 60%; /* 350px */
+	height: 60%;
+	border-radius: 50%;
+	margin: 10px;
+}
+#card_fullname {
+	align-self: center;
+	font-size: 22pt;
+}
+#card_streak_label {
+	align-self: center;
+	text-align: center;
+	margin: 10px;
+}
+#card_streak {
+	align-self: center;
+	font-size: 22pt;
+}
+#card_bottom {
+	display: flex;
+	position: absolute;
+	justify-content: space-between;
+	bottom: 15px;
+	width: calc(100% - 40px);
+	align-items: end;
+}
+#card_powered_by {
+	width: 150px;
+}
