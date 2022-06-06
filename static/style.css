@@ -37,14 +37,16 @@ html {
 #streak_card {
 	width: 460px;
 	height: 460px;
-	margin: auto;
-	margin-top: 20%;
 	border: solid #ECECEC 1px;
 	padding: 20px;
 	border-radius: 10px;
 	display: flex;
 	flex-direction: column;
-	position: relative;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	margin: auto;
 	background-color: #202020;
 }
 #streak_card * {
