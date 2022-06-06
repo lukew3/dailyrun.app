@@ -28,6 +28,12 @@ html {
 }
 
 /* Home */
+#logout_button {
+	position: absolute;
+	margin: 0;
+	top: 20px;
+	right: 20px;
+}
 #streak_card {
 	width: 460px;
 	height: 460px;

@@ -40,6 +40,12 @@ def home():
             return render_template('home.html', fullname=user.firstname + ' ' + user.lastname, streak=user.cur_streak, pfp_url=user.profile_pic, start_date=user.last_updated.strftime('%b %d, %Y'))
     return render_template('landing.html', authLink=get_oauth_url())
 
+@app.route('/logout')
+def logout():
+    response = make_response(redirect('/'))
+    response.set_cookie('strava_id', '', expires=0)
+    return response
+
 def streak_from_activities(user_strava_id):
     user = User.query.filter_by(strava_id=user_strava_id).first()
     r = requests.get('https://www.strava.com/api/v3/athlete/activities', headers={
