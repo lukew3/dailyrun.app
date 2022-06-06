@@ -40,7 +40,7 @@ def home():
     if strava_id:
         user = User.query.filter_by(strava_id=int(strava_id)).first()
         if user:
-            return render_template('home.html', fullname=user.firstname + ' ' + user.lastname, streak=user.cur_streak, pfp_url=user.profile_pic, start_date=user.last_activity_date.strftime('%b %d, %Y'))
+            return render_template('home.html', fullname=user.firstname + ' ' + user.lastname, streak=user.cur_streak, pfp_url=user.profile_pic, start_date=user.streak_start_date.strftime('%b %d, %Y'))
     return render_template('landing.html', authLink=get_oauth_url())
 
 @app.route('/logout')
@@ -66,6 +66,7 @@ def streak_from_activities(user_strava_id):
         if (recent_time - datetime.timedelta(hours=24)).date() == prev_time.date():
             streak += 1
             recent_time = prev_time
+            user.streak_start_date = recent_time
         elif recent_time.date() == prev_time.date():
             # Don't increment streak if 2+ activities recorded in the same day
             recent_time = prev_time
@@ -134,13 +135,17 @@ def receive_webhook():
             if activity_r.status_code == 200:
                 activity_time = datetime.datetime.fromisoformat(json.loads(activity_r.content)['start_date_local'][:-1])
                 if (activity_time - datetime.timedelta(hours=24)).date() == user.last_activity_date.date():
+                    # Extending streak
                     user.cur_streak = user.cur_streak + 1
                     user.last_activity_date = activity_time
                     db.session.commit()
                 elif activity_time.date() != user.last_activity_date.date():
-                    user.cur_streak = 0
+                    # New streak started
+                    user.cur_streak = 1
                     user.last_activity_date = activity_time
+                    user.streak_start_date = activity_time
                     db.session.commit()
+                # else: other activity logged today (ignore)
         return jsonify({})
 
 if __name__ == '__main__':
