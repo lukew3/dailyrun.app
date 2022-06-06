@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, make_response, redirect
+from flask import Flask, render_template, request, make_response, redirect, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from turbo_flask import Turbo
 import json
@@ -21,7 +21,8 @@ class User(db.Model):
     lastname = db.Column(db.String)
     profile_pic = db.Column(db.String)
     cur_streak = db.Column(db.Integer, default=0)
-    last_updated = db.Column(db.DateTime, default=db.func.now())
+    streak_start_date = db.Column(db.DateTime, default=db.func.now())
+    last_activity_date = db.Column(db.DateTime, default=db.func.now())
     # Strava data
     strava_id = db.Column(db.Integer, nullable=False, unique=True)
     refresh_token = db.Column(db.String)
@@ -39,7 +40,7 @@ def home():
     if strava_id:
         user = User.query.filter_by(strava_id=int(strava_id)).first()
         if user:
-            return render_template('home.html', fullname=user.firstname + ' ' + user.lastname, streak=user.cur_streak, pfp_url=user.profile_pic, start_date=user.last_updated.strftime('%b %d, %Y'))
+            return render_template('home.html', fullname=user.firstname + ' ' + user.lastname, streak=user.cur_streak, pfp_url=user.profile_pic, start_date=user.last_activity_date.strftime('%b %d, %Y'))
     return render_template('landing.html', authLink=get_oauth_url())
 
 @app.route('/logout')
@@ -57,6 +58,7 @@ def streak_from_activities(user_strava_id):
             'per_page': 50
         })
     data = json.loads(r.content)
+    user.last_activity_date = datetime.datetime.fromisoformat(data[0]['start_date_local'][:-1])
     streak = 0
     recent_time = datetime.datetime.now(tz=pytz.timezone(data[0]['timezone'].split()[1])) # the time of the last processed activity
     for activity in data:
@@ -71,7 +73,6 @@ def streak_from_activities(user_strava_id):
             break
     user.cur_streak = streak
     db.session.commit()
-    print(streak)
 
 @app.route('/invalid_permissions')
 def invalid_permissions():
@@ -104,9 +105,43 @@ def exchange_token():
         db.session.add(new_user)
         db.session.commit()
         streak_from_activities(new_user.strava_id)
+        # Initiate webhook
+        ws_init = requests.post('https://www.strava.com/api/v3/push_subscriptions', params={
+                'client_id': cfg['CLIENT_ID'],
+                'client_secret': cfg['CLIENT_SECRET'],
+                'callback_url': f"https://{cfg['DOMAIN']}/receive_webhook",
+                'verify_token': cfg['VERIFY_TOKEN']
+            })
     response = make_response(redirect('/'))
     response.set_cookie('strava_id', str(user_data['athlete']['id']).encode())
     return response
+
+@app.route('/receive_webhook', methods=['GET', 'POST'])
+def receive_webhook():
+    if request.method == 'GET':
+        # Validate subscription
+        return jsonify({'hub.challenge': request.args.get('hub.challenge')})
+    elif request.method == 'POST':
+        print(request.json)
+        if request.json['aspect_type'] == 'create' and request.json['object_type'] == 'activity':
+            # Check if newly uploaded activity extends streak
+            user = User.query.filter_by(strava_id=request.json['owner_id']).first()
+            # Check if user exists here? # Delete webhook if user not existing in db
+            # Get activity
+            activity_r = requests.get(f"https://www.strava.com/api/v3/activities/{request.json['object_id']}", headers={
+                    'Authorization': f'Bearer {user.access_token}'
+                })
+            if activity_r.status_code == 200:
+                activity_time = datetime.datetime.fromisoformat(json.loads(activity_r.content)['start_date_local'][:-1])
+                if (activity_time - datetime.timedelta(hours=24)).date() == user.last_activity_date.date():
+                    user.cur_streak = user.cur_streak + 1
+                    user.last_activity_date = activity_time
+                    db.session.commit()
+                elif activity_time.date() != user.last_activity_date.date():
+                    user.cur_streak = 0
+                    user.last_activity_date = activity_time
+                    db.session.commit()
+        return jsonify({})
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

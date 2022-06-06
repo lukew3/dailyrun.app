@@ -2,5 +2,6 @@
 	"CLIENT_ID": 12345,
 	"CLIENT_SECRET": "myclientsecret",
 	"DOMAIN": "localhost",
-	"SQLALCHEMY_DATABASE_URI": "sqlite:///./test.db"
+	"SQLALCHEMY_DATABASE_URI": "sqlite:///./test.db",
+	"VERIFY_TOKEN": "STRAVA"
 }
