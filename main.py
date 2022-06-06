@@ -23,6 +23,7 @@ class User(db.Model):
     cur_streak = db.Column(db.Integer, default=0)
     streak_start_date = db.Column(db.DateTime, default=db.func.now())
     last_activity_date = db.Column(db.DateTime, default=db.func.now())
+    timezone = db.Column(db.String, default="America/New_York")
     # Strava data
     strava_id = db.Column(db.Integer, nullable=False, unique=True)
     refresh_token = db.Column(db.String)
@@ -40,6 +41,12 @@ def home():
     if strava_id:
         user = User.query.filter_by(strava_id=int(strava_id)).first()
         if user:
+            now = datetime.datetime.now(tz=pytz.timezone(user.timezone))
+            # Check if last_activity was before yesterday
+            if user.last_activity_date.date() < (now - datetime.timedelta(hours=24)).date():
+                user.cur_streak = 0
+                user.streak_start_date = now
+                db.session.commit()
             return render_template('home.html', fullname=user.firstname + ' ' + user.lastname, streak=user.cur_streak, pfp_url=user.profile_pic, start_date=user.streak_start_date.strftime('%b %d, %Y'))
     return render_template('landing.html', authLink=get_oauth_url())
 
@@ -60,7 +67,8 @@ def streak_from_activities(user_strava_id):
     data = json.loads(r.content)
     user.last_activity_date = datetime.datetime.fromisoformat(data[0]['start_date_local'][:-1])
     streak = 0
-    recent_time = datetime.datetime.now(tz=pytz.timezone(data[0]['timezone'].split()[1])) # the time of the last processed activity
+    user.timezone = data[0]['timezone'].split()[1]
+    recent_time = datetime.datetime.now(tz=pytz.timezone(user.timezone)) # the time of the last processed activity
     for activity in data:
         prev_time = datetime.datetime.fromisoformat(activity['start_date_local'][:-1]) # the time of the activity being processed now
         if (recent_time - datetime.timedelta(hours=24)).date() == prev_time.date():
