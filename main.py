@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, make_response, redirect
 from flask_sqlalchemy import SQLAlchemy
+from turbo_flask import Turbo
 import json
 import requests
 import datetime
@@ -11,6 +12,7 @@ with open('config.json', 'r') as config_file:
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = cfg['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+turbo = Turbo(app)
 db = SQLAlchemy(app)
 
 class User(db.Model):
