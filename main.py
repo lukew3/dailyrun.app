@@ -56,8 +56,26 @@ def logout():
     response.set_cookie('strava_id', '', expires=0)
     return response
 
+def refresh_token(user_strava_id):
+    user = User.query.filter_by(strava_id=user_strava_id).first()
+    r = requests.post('https://www.strava.com/api/v3/oauth/token', params={
+            'client_id': cfg['CLIENT_ID'],
+            'client_secret': cfg['CLIENT_SECRET'],
+            'grant_type': 'refresh_token',
+            'refresh_token': user.refresh_token
+        })
+    if r.status_code != 200: return
+    data = json.loads(r.content)
+    user.access_token = data['access_token']
+    user.refresh_token = data['refresh_token']
+    user.access_token_exp_date = datetime.datetime.fromtimestamp(int(data['expires_at']))
+    print(user.access_token_exp_date)
+    db.session.commit()
+
 def streak_from_activities(user_strava_id):
     user = User.query.filter_by(strava_id=user_strava_id).first()
+    if not user: return;
+    if datetime.datetime.now() > user.access_token_exp_date: refresh_token(user.strava_id)
     found_streak_end = False
     activities_page = 0
     streak = 0
@@ -71,6 +89,7 @@ def streak_from_activities(user_strava_id):
                 'page': activities_page,
                 'per_page': 50
             })
+        if r.status_code != 200: return # TODO: Add better handling here
         data = json.loads(r.content)
         if first_iteration:
             user.last_activity_date = datetime.datetime.fromisoformat(data[0]['start_date_local'][:-1])
