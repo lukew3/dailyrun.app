@@ -58,28 +58,38 @@ def logout():
 
 def streak_from_activities(user_strava_id):
     user = User.query.filter_by(strava_id=user_strava_id).first()
-    r = requests.get('https://www.strava.com/api/v3/athlete/activities', headers={
-            'Authorization': f'Bearer {user.access_token}'
-        }, params={
-            'page': 1,
-            'per_page': 50
-        })
-    data = json.loads(r.content)
-    user.last_activity_date = datetime.datetime.fromisoformat(data[0]['start_date_local'][:-1])
+    found_streak_end = False
+    activities_page = 0
     streak = 0
-    user.timezone = data[0]['timezone'].split()[1]
-    recent_time = datetime.datetime.now(tz=pytz.timezone(user.timezone)) # the time of the last processed activity
-    for activity in data:
-        prev_time = datetime.datetime.fromisoformat(activity['start_date_local'][:-1]) # the time of the activity being processed now
-        if (recent_time - datetime.timedelta(hours=24)).date() == prev_time.date():
-            streak += 1
-            recent_time = prev_time
-            user.streak_start_date = recent_time
-        elif recent_time.date() == prev_time.date():
-            # Don't increment streak if 2+ activities recorded in the same day
-            recent_time = prev_time
-        else:
-            break
+    first_iteration = True
+    last_time = datetime.datetime.now()
+    while not found_streak_end:
+        activities_page += 1
+        r = requests.get('https://www.strava.com/api/v3/athlete/activities', headers={
+                'Authorization': f'Bearer {user.access_token}'
+            }, params={
+                'page': activities_page,
+                'per_page': 50
+            })
+        data = json.loads(r.content)
+        if first_iteration:
+            user.last_activity_date = datetime.datetime.fromisoformat(data[0]['start_date_local'][:-1])
+            user.timezone = data[0]['timezone'].split()[1]
+            last_time = datetime.datetime.now(tz=pytz.timezone(user.timezone))
+            first_iteration = False
+        i = 0
+        while i < 50 and not found_streak_end:
+            this_time = datetime.datetime.fromisoformat(data[i]['start_date_local'][:-1]) # the time of the activity being processed now
+            if (last_time - datetime.timedelta(hours=24)).date() == this_time.date():
+                streak += 1
+                last_time = this_time
+                user.streak_start_date = last_time
+            elif last_time.date() == this_time.date():
+                # Don't increment streak if 2+ activities recorded in the same day
+                last_time = this_time
+            else:
+                found_streak_end = True 
+            i += 1
     user.cur_streak = streak
     db.session.commit()
 
