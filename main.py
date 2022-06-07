@@ -83,6 +83,15 @@ def streak_from_activities(user_strava_id):
     user.cur_streak = streak
     db.session.commit()
 
+@app.route('/force_recheck')
+def force_recheck():
+    strava_id = request.cookies.get('strava_id')
+    if not strava_id: return redirect('/')
+    user = User.query.filter_by(strava_id=int(strava_id)).first()
+    if not user: return redirect('/')
+    streak_from_activities(user.strava_id)
+    return redirect('/')
+
 @app.route('/invalid_permissions')
 def invalid_permissions():
     return render_template('invalid_permissions.html', authLink=get_oauth_url())

@@ -2,15 +2,18 @@
 
 {% block content %}
 <p id="logout_button"><a href="/logout">Logout</a></p>
-<div id="streak_card">
-	<h3 id="card_brandname">Fitness Streak Tracker</h3>
-	<img id="card_pfp" src="{{ pfp_url }}" alt="{{ fullname }}">
-	<h2 id="card_fullname">{{ fullname }}</h2>
-	<p id="card_streak_label">Has a streak of:</p>
-	<h2 id="card_streak">{{ streak }} days</h2>
-	<div id="card_bottom">
-		<p id="card_start_date">Started {{ start_date }}</p>
-		<img id="card_powered_by" src="{{ url_for('static', filename='powered_by_strava_buttons/horiz_gray.svg') }}">
+<div id="home_centered">
+	<div id="streak_card">
+		<h3 id="card_brandname">Fitness Streak Tracker</h3>
+		<img id="card_pfp" src="{{ pfp_url }}" alt="{{ fullname }}">
+		<h2 id="card_fullname">{{ fullname }}</h2>
+		<p id="card_streak_label">Has a streak of:</p>
+		<h2 id="card_streak">{{ streak }} days</h2>
+		<div id="card_bottom">
+			<p id="card_start_date">Started {{ start_date }}</p>
+			<img id="card_powered_by" src="{{ url_for('static', filename='powered_by_strava_buttons/horiz_gray.svg') }}">
+		</div>
 	</div>
+	<p id="recheck_link"><a href='/force_recheck'>Re-check streak</a></p>
 </div>
 {% endblock %}
