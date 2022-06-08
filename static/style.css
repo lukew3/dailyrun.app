@@ -47,33 +47,36 @@ html {
 	border: solid #ECECEC 1px;
 	padding: 20px;
 	border-radius: 10px;
-	display: flex;
-	flex-direction: column;
+	display: grid;
 	background-color: #202020;
+	justify-content: center;
 }
 #streak_card * {
 	margin: 0;
+	text-align: center;
 }
 #card_brandname {
 	font-size: 14pt;
 	font-weight: bold;
 	margin-bottom: 5px;
+	text-align: left;
 }
 #card_pfp {
+	justify-self: center;
 	align-self: center;
-	width: 60%; /* 350px */
-	height: 60%;
+	max-width: 100%;
+	max-height: 100%;
 	border-radius: 50%;
-	margin: 10px;
 }
 #card_fullname {
+	margin-top: 5px;
 	align-self: center;
 	font-size: 22pt;
 }
 #card_streak_label {
 	align-self: center;
 	text-align: center;
-	margin: 10px;
+	margin: 5px 0;
 }
 #card_streak {
 	align-self: center;
