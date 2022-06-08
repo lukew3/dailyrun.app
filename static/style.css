@@ -88,6 +88,11 @@ html {
 #card_powered_by {
 	width: 150px;
 }
-#recheck_link {
-	text-align: right;
+#home_reload {
+	display: flex;
+	float:right;
+}
+#refresh_seperator {
+	margin-left: 5px;
+	margin-right: 5px;
 }

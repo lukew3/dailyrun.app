@@ -14,6 +14,10 @@
 			<img id="card_powered_by" src="{{ url_for('static', filename='powered_by_strava_buttons/horiz_gray.svg') }}">
 		</div>
 	</div>
-	<p id="recheck_link"><a href='/force_recheck'>Re-check streak</a></p>
+	<div id="home_reload">
+		<p><a href="/reload_profile">Reload Profile</a></p>
+		<p id="refresh_seperator">|</p>
+		<p><a href="/reload_streak">Reload Streak</a></p>
+	</div>
 </div>
 {% endblock %}

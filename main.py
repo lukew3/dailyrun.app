@@ -112,8 +112,29 @@ def streak_from_activities(user_strava_id):
     user.cur_streak = streak
     db.session.commit()
 
-@app.route('/force_recheck')
-def force_recheck():
+def hq_pfp(pfp):
+    return pfp[:-9] + 'original.jpg' if pfp[-9:] == 'large.jpg' else pfp
+
+@app.route('/reload_profile')
+def reload_profile():
+    strava_id = request.cookies.get('strava_id')
+    if not strava_id: return redirect('/')
+    user = User.query.filter_by(strava_id=int(strava_id)).first()
+    if not user: return redirect('/')
+    if datetime.datetime.now() > user.access_token_exp_date: refresh_token(user.strava_id)
+    r = requests.get('https://www.strava.com/api/v3/athlete', headers={
+            'Authorization': f'Bearer {user.access_token}'
+        })
+    if r.status_code != 200: return redirect('/')
+    data = json.loads(r.content)
+    user.firstname = data['firstname']
+    user.lastname = data['lastname']
+    user.profile_pic = hq_pfp(data['profile'])
+    db.session.commit()
+    return redirect('/')
+
+@app.route('/reload_streak')
+def reload_streak():
     strava_id = request.cookies.get('strava_id')
     if not strava_id: return redirect('/')
     user = User.query.filter_by(strava_id=int(strava_id)).first()
@@ -139,11 +160,9 @@ def exchange_token():
     user_data = json.loads(r.content)
     if not User.query.filter_by(strava_id=user_data['athlete']['id']).first(): 
         # Create user if not already existing
-        pfp = user_data['athlete']['profile']
-        if pfp[-9:] == 'large.jpg': pfp = pfp[:-9] + 'original.jpg'
         new_user = User(firstname=user_data['athlete']['firstname'],
                 lastname=user_data['athlete']['lastname'],
-                profile_pic=pfp,
+                profile_pic=hq_pfp(user_data['athlete']['profile']),
                 strava_id=user_data['athlete']['id'],
                 refresh_token=user_data['refresh_token'],
                 access_token=user_data['access_token'],
