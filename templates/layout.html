@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>Fitness Streak Tracker</title>
+	<title>Daily Run App</title>
 	<meta name="description" content="Show how many days in a row you have logged Strava activities for">
 	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,7 @@
 	<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
 </head>
 <body>
-	<h2><a href='/'>Fitness Streak Tracker</a></h2>
+	<h2><a href='/'>Daily Run</a></h2>
 	{% block content %}
 	{% endblock %}
 	<a href="https://strava.com"><img id="powered_by_strava_svg" src={{ url_for('static', filename='powered_by_strava_buttons/horiz_gray.svg') }} alt="Powered by Strava"></a>
