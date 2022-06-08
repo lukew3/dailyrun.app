@@ -48,6 +48,7 @@ html {
 	padding: 20px;
 	border-radius: 10px;
 	display: grid;
+	grid-template-rows: 7% 60% 10% 5% 10% 8%;
 	background-color: #202020;
 	justify-content: center;
 }
@@ -58,7 +59,6 @@ html {
 #card_brandname {
 	font-size: 14pt;
 	font-weight: bold;
-	margin-bottom: 5px;
 	text-align: left;
 }
 #card_pfp {
@@ -69,14 +69,12 @@ html {
 	border-radius: 50%;
 }
 #card_fullname {
-	margin-top: 5px;
 	align-self: center;
 	font-size: 22pt;
 }
 #card_streak_label {
 	align-self: center;
 	text-align: center;
-	margin: 5px 0;
 }
 #card_streak {
 	align-self: center;
