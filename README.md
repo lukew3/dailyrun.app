@@ -1,4 +1,4 @@
-# Fitness Streak Tracker
+# DailyRun.app
 
 Track your current and longest fitness streaks
 
