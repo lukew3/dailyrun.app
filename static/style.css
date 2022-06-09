@@ -42,13 +42,15 @@ html {
 	margin: auto;
 }
 #streak_card {
-	width: 460px;
-	height: 460px;
+	width: calc(100vw - 60px);
+	height: calc(100vw - 60px);
+	max-width: 460px;
+	max-height: 460px;
 	border: solid #ECECEC 1px;
 	padding: 20px;
 	border-radius: 10px;
 	display: grid;
-	grid-template-rows: 7% 60% 10% 5% 10% 8%;
+	grid-template-rows: 6% 2% 58% 1% 9% 1.5% 4% 1.5% 9% 3% 5%;
 	background-color: #202020;
 	justify-content: center;
 }
@@ -57,9 +59,8 @@ html {
 	text-align: center;
 }
 #card_brandname {
-	font-size: 14pt;
-	font-weight: bold;
-	text-align: left;
+	height: 100%;
+	justify-self: left;
 }
 #card_pfp {
 	justify-self: center;
@@ -69,16 +70,16 @@ html {
 	border-radius: 50%;
 }
 #card_fullname {
-	align-self: center;
-	font-size: 22pt;
+	height: 100%;
+	justify-self: center;
 }
 #card_streak_label {
-	align-self: center;
-	text-align: center;
+	height: 100%;
+	justify-self: center;
 }
 #card_streak {
-	align-self: center;
-	font-size: 22pt;
+	height: 100%;
+	justify-self: center;
 }
 #card_bottom {
 	display: flex;
@@ -86,8 +87,12 @@ html {
 	width: 100%;
 	align-items: end;
 }
+#card_start_date {
+	height: 100%;
+	justify-self: center;
+}
 #card_powered_by {
-	width: 150px;
+	height: 100%;
 }
 #home_reload {
 	display: flex;
