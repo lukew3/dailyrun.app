@@ -94,9 +94,18 @@ html {
 #card_powered_by {
 	height: 100%;
 }
+#home_sharing {
+	margin-top: 8px;
+	display: flex;
+	justify-content: right;
+}
 #home_reload {
 	display: flex;
-	float:right;
+	justify-content: right;
+}
+#home_reload * {
+	margin-top: 3px;
+	margin-bottom: 0;
 }
 #refresh_seperator {
 	margin-left: 5px;

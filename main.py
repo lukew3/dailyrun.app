@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, make_response, redirect, jsonify
+from flask import Flask, render_template, request, make_response, redirect, jsonify, send_file
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 from flask_sqlalchemy import SQLAlchemy
 from turbo_flask import Turbo
+from io import BytesIO
 import json
 import requests
 import datetime
@@ -212,6 +214,45 @@ def receive_webhook():
                     db.session.commit()
                 # else: other activity logged today (ignore)
         return jsonify({})
+
+@app.route('/get_image', methods=['GET'])
+def get_image():
+    strava_id = request.cookies.get('strava_id')
+    user = User.query.filter_by(strava_id=strava_id).first()
+    if not user: return redirect('/')
+    img = Image.new('RGB', (1000, 1000), (32, 32, 32))
+    drw = ImageDraw.Draw(img)
+    fnt_sml = ImageFont.truetype('./static/Roboto-Regular.ttf', 34)
+    fnt_med = ImageFont.truetype('./static/Roboto-Regular.ttf', 40)
+    fnt_lrg = ImageFont.truetype('./static/Roboto-Regular.ttf', 80)
+    txt_clr = (255, 255, 255)
+    drw.text((40, 40), "dailyrun.app", fill=txt_clr, font=fnt_med)
+    # Profile Image
+    profile_img = Image.open(BytesIO(requests.get(user.profile_pic).content))
+    profile_img.thumbnail((500,500))
+    img.paste(profile_img, (250, 125))
+    # User name
+    fullname = f"{user.firstname} {user.lastname}"
+    name_width, _ = drw.textsize(fullname, font=fnt_lrg)
+    drw.text(((1000-name_width)/2, 650), fullname, fill=txt_clr, font=fnt_lrg)
+    # Streak Label
+    streak_lbl_txt = "Has a streak of:"
+    streak_lbl_width, _ = drw.textsize(streak_lbl_txt, font=fnt_sml)
+    drw.text(((1000-streak_lbl_width)/2, 750), streak_lbl_txt, fill=txt_clr, font=fnt_sml)
+    # Streak
+    streak_txt = f"{user.cur_streak} days"
+    streak_width, _ = drw.textsize(streak_txt, font=fnt_lrg)
+    drw.text(((1000-streak_width)/2, 800), streak_txt, fill=txt_clr, font=fnt_lrg)
+    # Start_date
+    drw.text((40, 920), f"Started {user.streak_start_date.strftime('%b %d, %Y')}", fill=txt_clr, font=fnt_med)
+    # Powered_by_image
+    powered_by_image = Image.open('static/powered_by_strava_buttons/horiz_gray.png')
+    img.paste(powered_by_image, (650, 920), powered_by_image)
+    img_io = BytesIO()
+    img.save(img_io, 'JPEG', quality=70)
+    img_io.seek(0)
+    # return send_file(img_io, mimetype='image/jpeg', as_attachment=True, download_name='dailyrun')
+    return send_file(img_io, mimetype='image/jpeg', download_name='dailyrun')
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
