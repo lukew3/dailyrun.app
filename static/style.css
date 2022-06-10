@@ -94,20 +94,13 @@ html {
 #card_powered_by {
 	height: 100%;
 }
-#home_sharing {
-	margin-top: 8px;
-	display: flex;
-	justify-content: right;
-}
 #home_reload {
 	display: flex;
 	justify-content: right;
+	margin-top: 8px;
 }
 #home_reload * {
-	margin-top: 3px;
-	margin-bottom: 0;
-}
-#refresh_seperator {
-	margin-left: 5px;
-	margin-right: 5px;
+	margin: 0;
+	line-height: 25px;
+	margin: 0 3px;
 }

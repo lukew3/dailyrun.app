@@ -29,15 +29,14 @@
 			<img id="card_powered_by" src="{{ url_for('static', filename='powered_by_strava_buttons/horiz_gray.svg') }}">
 		</div>
 	</div>
-	<div id="home_sharing">
+	<div id="home_reload">
+		<a href="/reload_profile">Reload Profile</a>
+		<p class="refresh_seperator">|</p>
+		<a href="/reload_streak">Reload Streak</a>
+		<p class="refresh_seperator">|</p>
 		<a href="/get_image">
 			<img src="{{ url_for('static', filename='share_icons/download.svg') }}" alt="download" height="25px">
 		</a>
-	</div>
-	<div id="home_reload">
-		<p><a href="/reload_profile">Reload Profile</a></p>
-		<p id="refresh_seperator">|</p>
-		<p><a href="/reload_streak">Reload Streak</a></p>
 	</div>
 </div>
 {% endblock %}
