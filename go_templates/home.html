@@ -1,0 +1,38 @@
+<p id="logout_button"><a href="/logout">Logout</a></p>
+<div id="home_centered">
+	<div id="streak_card">
+		<svg id="card_brandname" viewbox="0 0 105 18">
+			<text fill="white" x="0" y="15">dailyrun.app</text>
+		</svg>
+		<div></div>
+		<img id="card_pfp" src="{{ .pfp_url }}" alt="{{ .fullname }}">
+		<div></div>
+		<svg id="card_fullname" viewbox="0 0 85 18">
+			<text fill="white" x="0" y="15">{{ .fullname }}</text>
+		</svg>
+		<div></div>
+		<svg id="card_streak_label" viewbox="0 0 115 18">
+			<text fill="white" x="0" y="15">Has a streak of:</text>
+		</svg>
+		<div></div>
+		<svg id="card_streak" viewbox="0 0 55 18">
+			<text fill="white" x="0" y="15">{{ .streak }} days</text>
+		</svg>
+		<div></div>
+		<div id="card_bottom">
+			<svg id="card_start_date" viewbox="0 0 150 18">
+				<text fill="white" x="0" y="15">Started {{ .start_date }}</text>
+			</svg>
+			<img id="card_powered_by" src="./powered_by.svg">
+		</div>
+	</div>
+	<div id="home_reload">
+		<a href="/reload_profile">Reload Profile</a>
+		<p class="refresh_seperator">|</p>
+		<a href="/reload_streak">Reload Streak</a>
+		<p class="refresh_seperator">|</p>
+		<a href="/get_image">
+			<img src="./download.svg">
+		</a>
+	</div>
+</div>
