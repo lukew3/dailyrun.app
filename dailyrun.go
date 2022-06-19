@@ -54,14 +54,24 @@ type HomePage struct {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("go_templates/landing.html")
-	t.Execute(w, "https://google.com")
-	/*
-	p := HomePage{pfp_url: "https://lh3.googleusercontent.com/ogw/ADea4I4h8YTg0BoMqjIUw1EKVi_BVNjhR_3YZea2S_cy=s32-c-mo", fullname: "Luke Weiler", streak: "40", start_date: "May 26, 2022"}
-	t, err := template.ParseFiles("go_templates/home.html")
-	checkErr(err)
-	t.Execute(w, p)
-	*/
+	// Get cookie
+	c, _ := r.Cookie("strava_id")
+	if c != nil {
+		fmt.Println(c)
+		p := HomePage{pfp_url: "https://lh3.googleusercontent.com/ogw/ADea4I4h8YTg0BoMqjIUw1EKVi_BVNjhR_3YZea2S_cy=s32-c-mo", fullname: "Luke Weiler", streak: "40", start_date: "May 26, 2022"}
+		t, _ := template.ParseFiles("go_templates/home.html")
+		t.Execute(w, p)
+	} else {
+		fmt.Println("No cookie")
+		cookie := &http.Cookie{
+			Name:  "strava_id",
+			Value: "lukew3",
+			MaxAge: 300,
+		}
+		http.SetCookie(w, cookie)
+		t, _ := template.ParseFiles("go_templates/landing.html")
+		t.Execute(w, "https://google.com")
+	}
 	// t, _ := template.ParseFiles("go_templates/hello.html")
 	// t.Execute(w, "Luke")
 }
