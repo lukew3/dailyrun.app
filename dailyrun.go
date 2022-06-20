@@ -9,6 +9,7 @@ import (
 	"html/template"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/joho/godotenv"
 )
 
 func checkErr(err error) {
@@ -70,13 +71,20 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, cookie)
 		t, _ := template.ParseFiles("go_templates/landing.html")
-		t.Execute(w, "https://google.com")
+		t.Execute(w, getOauthUrl())
 	}
 	// t, _ := template.ParseFiles("go_templates/hello.html")
 	// t.Execute(w, "Luke")
 }
 
+func getOauthUrl() string {
+	return "http://www.strava.com/oauth/authorize?client_id=" + os.Getenv("CLIENT_ID") + "&response_type=code&redirect_uri=https://" + os.Getenv("DOMAIN") + "/exchange_token&approval_prompt=force&scope=activity:read,activity:read_all"
+}
+
 func main() {
+	err := godotenv.Load("local.env")
+	checkErr(err)
+
 	// var templates *template.Template
 	// templates = template.Must(templates.ParseGlob("go_templates/*.html"))
 	createDB("./foo.db")
