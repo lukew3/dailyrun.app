@@ -102,14 +102,15 @@ func exchangeTokenHandler(w http.ResponseWriter, r *http.Request) {
 	checkErr(err)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	user_data := make(map[string]string)
+	var user_data interface{}
+	// user_data := make(map[string]string)
 	json.Unmarshal(body, &user_data)
 	// stmt, err := db.Prepare("INSERT INTO users(firstname, lastname, profile_pic, cur_streak, streak_start_date, last_activity_date, timezone, strava_id, refresh_token, access_token, access_token_exp_date) values(?,?,?,?,?,?,?,?,?,?,?)")
         checkErr(err)
         // stmt.Exec("luke", "weiler", "google.com", 38, 400, 400, "America/New_York", 1, "asdfasdf", "asdfasdfasdf", 4000)
 	//fmt.Println(string(body))
 	fmt.Println(user_data)
-	fmt.Println(string(user_data["access_token"]))
+	// fmt.Println(string(user_data["access_token"]))
 }
 
 func main() {
