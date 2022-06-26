@@ -56,19 +56,27 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		t, _ := template.ParseFiles("go_templates/home.html")
 		t.Execute(w, p)
 	} else {
-		fmt.Println("No cookie")
-		cookie := &http.Cookie{
-			Name:  "strava_id",
-			Value: "lukew3",
-			MaxAge: 300,
-		}
-		http.SetCookie(w, cookie)
 		t, _ := template.ParseFiles("go_templates/landing.html")
 		t.Execute(w, getOauthUrl())
 	}
 	// t, _ := template.ParseFiles("go_templates/hello.html")
 	// t.Execute(w, "Luke")
 }
+
+func userExists(strava_id uint32) bool {
+	// Determine if user exists
+	var exists bool = true
+	if err := db.QueryRow("SELECT * FROM users WHERE strava_id = ?", strava_id).Scan(&exists); err != nil {
+		// UserExists is false if err is sql.ErrNoRows
+		exists = err != sql.ErrNoRows
+	}
+	return exists
+}
+
+func streakFromActivities(strava_id uint32) {
+	userExists(strava_id)
+}
+
 type ExchangeTokenResponse struct {
 	AccessToken string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
@@ -102,22 +110,23 @@ func exchangeTokenHandler(w http.ResponseWriter, r *http.Request) {
 	var user_data ExchangeTokenResponse
 	json.Unmarshal(body, &user_data)
 
-	fmt.Println(user_data.AccessToken)
-	fmt.Println(user_data.Athlete.FirstName)
-
-	// Determine if user exists
-	var userExists bool = true
-	if err := db.QueryRow("SELECT * FROM users WHERE strava_id = ?", user_data.Athlete.Id).Scan(&userExists); err != nil {
-		// UserExists is false if sql.ErrNoRows error
-		userExists = err != sql.ErrNoRows
-	}
-	if (!userExists) {
-		// Create new user
+	// Create new user if not previously existing
+	if (!userExists(user_data.Athlete.Id)) {
 		stmt, err := db.Prepare("INSERT INTO users(firstname, lastname, profile_pic, cur_streak, streak_start_date, last_activity_date, timezone, strava_id, refresh_token, access_token, access_token_exp_date) values(?,?,?,?,?,?,?,?,?,?,?)")
 		checkErr(err)
 		stmt.Exec(user_data.Athlete.FirstName, user_data.Athlete.LastName, user_data.Athlete.ProfilePic, 0, 0, 0, "America/New_York", user_data.Athlete.Id, user_data.RefreshToken, user_data.AccessToken, user_data.ExpiresAt)
+		streakFromActivities(user_data.Athlete.Id)
 		fmt.Println(user_data)
 	}
+
+	// Set cookie
+	cookie := &http.Cookie{
+		Name:  "strava_id",
+		Value: string(user_data.Athlete.Id),
+		MaxAge: 300,
+	}
+	http.SetCookie(w, cookie)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func init() {
