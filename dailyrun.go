@@ -15,6 +15,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var db *sql.DB
+
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
@@ -27,7 +29,7 @@ func createDB(filename string) {
 		log.Fatal(err)
 	}
 	file.Close()
-	db, err := sql.Open("sqlite3", filename)
+	db, err = sql.Open("sqlite3", filename)
 	checkErr(err)
 	users_table := `CREATE TABLE users (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -83,6 +85,17 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	// t, _ := template.ParseFiles("go_templates/hello.html")
 	// t.Execute(w, "Luke")
 }
+type ExchangeTokenResponse struct {
+	AccessToken string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	ExpiresAt uint32 `json:"expires_at"`
+	Athlete struct {
+		FirstName string `json:"firstname"`
+		LastName string `json:"lastname"`
+		Id uint32 `json:"id"`
+		ProfilePic string `json:"profile"`
+	} `json:"athlete"`
+}
 
 func exchangeTokenHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
@@ -102,32 +115,33 @@ func exchangeTokenHandler(w http.ResponseWriter, r *http.Request) {
 	checkErr(err)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	var user_data interface{}
-	// user_data := make(map[string]string)
+	var user_data ExchangeTokenResponse
 	json.Unmarshal(body, &user_data)
-	// stmt, err := db.Prepare("INSERT INTO users(firstname, lastname, profile_pic, cur_streak, streak_start_date, last_activity_date, timezone, strava_id, refresh_token, access_token, access_token_exp_date) values(?,?,?,?,?,?,?,?,?,?,?)")
+
+	fmt.Println(user_data.AccessToken)
+	fmt.Println(user_data.Athlete.FirstName)
+
+	stmt, err := db.Prepare("INSERT INTO users(firstname, lastname, profile_pic, cur_streak, streak_start_date, last_activity_date, timezone, strava_id, refresh_token, access_token, access_token_exp_date) values(?,?,?,?,?,?,?,?,?,?,?)")
         checkErr(err)
-        // stmt.Exec("luke", "weiler", "google.com", 38, 400, 400, "America/New_York", 1, "asdfasdf", "asdfasdfasdf", 4000)
-	//fmt.Println(string(body))
+        stmt.Exec(user_data.Athlete.FirstName, user_data.Athlete.LastName, user_data.Athlete.ProfilePic, 0, 0, 0, "America/New_York", user_data.Athlete.Id, user_data.RefreshToken, user_data.AccessToken, user_data.ExpiresAt)
 	fmt.Println(user_data)
-	// fmt.Println(string(user_data["access_token"]))
+	// fmt.Println(w, "<h1>Success</h1>")
+	// t, _ := template.ParseFiles("go_templates/landing.html")
+	// t.Execute(w, getOauthUrl())
 }
 
-func main() {
+func init() {
 	err := godotenv.Load("local.env")
 	checkErr(err)
 
+	createDB(os.Getenv("DB_FILENAME"))
+	// db, err := sql.Open("sqlite3", os.Getenv("DB_FILENAME"))
+	db.Query("")
+}
+
+func main() {
 	// var templates *template.Template
 	// templates = template.Must(templates.ParseGlob("go_templates/*.html"))
-	createDB("./foo.db")
-
-	db, err := sql.Open("sqlite3", "./foo.db")
-	checkErr(err)
-
-	stmt, err := db.Prepare("INSERT INTO users(firstname, lastname, profile_pic, cur_streak, streak_start_date, last_activity_date, timezone, strava_id, refresh_token, access_token, access_token_exp_date) values(?,?,?,?,?,?,?,?,?,?,?)")
-	checkErr(err)
-
-	stmt.Exec("luke", "weiler", "google.com", 38, 400, 400, "America/New_York", 1, "asdfasdf", "asdfasdfasdf", 4000)
 
 	// API routes
 	http.HandleFunc("/", indexHandler)
