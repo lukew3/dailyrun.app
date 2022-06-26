@@ -122,7 +122,7 @@ func exchangeTokenHandler(w http.ResponseWriter, r *http.Request) {
 	// Set cookie
 	cookie := &http.Cookie{
 		Name:  "strava_id",
-		Value: string(user_data.Athlete.Id),
+		Value: fmt.Sprint(user_data.Athlete.Id),
 		MaxAge: 300,
 	}
 	http.SetCookie(w, cookie)
