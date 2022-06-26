@@ -25,17 +25,13 @@ func checkErr(err error) {
 
 func createDB(filename string) {
 	file, err := os.Create(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkErr(err)
 	file.Close()
 	db, err = sql.Open("sqlite3", filename)
 	checkErr(err)
 	users_table, _ := ioutil.ReadFile("./init.sql")
 	query, err := db.Prepare(string(users_table))
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkErr(err)
 	query.Exec()
 	fmt.Println("Table created successfully!")
 }
@@ -109,13 +105,19 @@ func exchangeTokenHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(user_data.AccessToken)
 	fmt.Println(user_data.Athlete.FirstName)
 
-	stmt, err := db.Prepare("INSERT INTO users(firstname, lastname, profile_pic, cur_streak, streak_start_date, last_activity_date, timezone, strava_id, refresh_token, access_token, access_token_exp_date) values(?,?,?,?,?,?,?,?,?,?,?)")
-        checkErr(err)
-        stmt.Exec(user_data.Athlete.FirstName, user_data.Athlete.LastName, user_data.Athlete.ProfilePic, 0, 0, 0, "America/New_York", user_data.Athlete.Id, user_data.RefreshToken, user_data.AccessToken, user_data.ExpiresAt)
-	fmt.Println(user_data)
-	// fmt.Println(w, "<h1>Success</h1>")
-	// t, _ := template.ParseFiles("go_templates/landing.html")
-	// t.Execute(w, getOauthUrl())
+	// Determine if user exists
+	var userExists bool = true
+	if err := db.QueryRow("SELECT * FROM users WHERE strava_id = ?", user_data.Athlete.Id).Scan(&userExists); err != nil {
+		// UserExists is false if sql.ErrNoRows error
+		userExists = err != sql.ErrNoRows
+	}
+	if (!userExists) {
+		// Create new user
+		stmt, err := db.Prepare("INSERT INTO users(firstname, lastname, profile_pic, cur_streak, streak_start_date, last_activity_date, timezone, strava_id, refresh_token, access_token, access_token_exp_date) values(?,?,?,?,?,?,?,?,?,?,?)")
+		checkErr(err)
+		stmt.Exec(user_data.Athlete.FirstName, user_data.Athlete.LastName, user_data.Athlete.ProfilePic, 0, 0, 0, "America/New_York", user_data.Athlete.Id, user_data.RefreshToken, user_data.AccessToken, user_data.ExpiresAt)
+		fmt.Println(user_data)
+	}
 }
 
 func init() {
