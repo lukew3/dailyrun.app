@@ -1,5 +1,4 @@
-venv/
-config.json
 *.db
 *.sh
 local.env
+dailyrun
