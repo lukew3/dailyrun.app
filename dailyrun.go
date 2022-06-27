@@ -37,10 +37,10 @@ func createDB(filename string) {
 }
 
 type HomePage struct {
-	pfp_url string
-	fullname string
-	streak string
-	start_date string
+	PfpUrl string
+	Fullname string
+	Streak string
+	StartDate string
 }
 
 func getOauthUrl() string {
@@ -52,8 +52,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	c, _ := r.Cookie("strava_id")
 	if c != nil {
 		fmt.Println(c)
-		p := HomePage{pfp_url: "https://lh3.googleusercontent.com/ogw/ADea4I4h8YTg0BoMqjIUw1EKVi_BVNjhR_3YZea2S_cy=s32-c-mo", fullname: "Luke Weiler", streak: "40", start_date: "May 26, 2022"}
-		t, _ := template.ParseFiles("go_templates/home.html")
+		p := HomePage{PfpUrl: "https://lh3.googleusercontent.com/ogw/ADea4I4h8YTg0BoMqjIUw1EKVi_BVNjhR_3YZea2S_cy=s32-c-mo", Fullname: "Luke Weiler", Streak: "40", StartDate: "May 26, 2022"}
+		t, err := template.ParseFiles("go_templates/home.html")
+		checkErr(err)
 		t.Execute(w, p)
 	} else {
 		t, _ := template.ParseFiles("go_templates/landing.html")
@@ -141,6 +142,10 @@ func init() {
 func main() {
 	// var templates *template.Template
 	// templates = template.Must(templates.ParseGlob("go_templates/*.html"))
+
+	// Static file serving
+	fileServer := http.FileServer(http.Dir("./static"))
+	http.Handle("/resources/", http.StripPrefix("/resources", fileServer))
 
 	// API routes
 	http.HandleFunc("/", indexHandler)
