@@ -2,5 +2,4 @@ venv/
 config.json
 *.db
 *.sh
-static/compatible_with_strava_buttons/ 
 local.env

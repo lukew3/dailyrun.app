@@ -2,14 +2,15 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"html/template"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/joho/godotenv"
@@ -125,6 +126,18 @@ func exchangeTokenHandler(w http.ResponseWriter, r *http.Request) {
 		Name:  "strava_id",
 		Value: fmt.Sprint(user_data.Athlete.Id),
 		MaxAge: 300,
+		HttpOnly: true,
+	}
+	http.SetCookie(w, cookie)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	cookie := &http.Cookie{
+		Name: "strava_id",
+		Value: "",
+		Expires: time.Unix(0, 0),
+		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -150,9 +163,7 @@ func main() {
 	// API routes
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/exchange_token", exchangeTokenHandler)
-	http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hi")
-	})
+	http.HandleFunc("/logout", logoutHandler)
 
 	port := ":5000"
 	fmt.Println("Server is running on port" + port)
