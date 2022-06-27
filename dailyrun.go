@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/joho/godotenv"
@@ -135,7 +134,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	cookie := &http.Cookie{
 		Name: "strava_id",
 		Value: "",
-		Expires: time.Unix(0, 0),
+		MaxAge: -1,
 		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
