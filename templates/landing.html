@@ -1,9 +1,23 @@
-{% extends 'layout.html' %}
-
-{% block content %}
-<div id="landing_group">
-	<h2>Consistency is Key</h2>
-	<p>Track how many days you’ve maintained your daily exercise habit for and share your progress with others.</p>
-	<p><a href="{{ authLink }}"><img src="{{ url_for('static', filename='connect_with_strava_buttons/orange.svg') }}" alt="Connect with Strava"></a></p>
-</div>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>                                
+        <meta charset="UTF-8">
+        <title>DailyRun.app</title>
+        <meta name="description" content="Show how many days in a row you have logged Strava activities for">
+        <link rel="stylesheet" type="text/css" href="/resources/style.css" media="screen">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">       
+	<!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+</head>
+<body>
+	<h2><a href='/'>Daily Run</a></h2>
+	<div id="landing_group">
+		<h2>Consistency is Key</h2>
+		<p>Track how many days you’ve maintained your daily exercise habit for and share your progress with others.</p>
+		<p><a href="{{ . }}"><img src="/resources/connect_strava.svg" alt="Connect with Strava"></a></p>
+	</div>
+        <a href="https://strava.com"><img id="powered_by_strava_svg" src="/resources/powered_by_strava.svg" alt="Powered by Strava"></a>                                          
+</body>
+</html>

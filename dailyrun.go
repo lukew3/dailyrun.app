@@ -37,7 +37,7 @@ func createDB(filename string) {
 	fmt.Println("Table created successfully!")
 }
 
-type HomePage struct {
+type HomePageData struct {
 	PfpUrl string
 	Fullname string
 	Streak string
@@ -52,16 +52,15 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	// Get cookie
 	c, _ := r.Cookie("strava_id")
 	if c != nil {
-		fmt.Println(c)
-		p := HomePage{PfpUrl: "https://lh3.googleusercontent.com/ogw/ADea4I4h8YTg0BoMqjIUw1EKVi_BVNjhR_3YZea2S_cy=s32-c-mo", Fullname: "Luke Weiler", Streak: "40", StartDate: "May 26, 2022"}
-		t, err := template.ParseFiles("go_templates/home.html")
+		p := HomePageData{PfpUrl: "https://lh3.googleusercontent.com/ogw/ADea4I4h8YTg0BoMqjIUw1EKVi_BVNjhR_3YZea2S_cy=s32-c-mo", Fullname: "Luke Weiler", Streak: "40", StartDate: "May 26, 2022"}
+		t, err := template.ParseFiles("templates/home.html")
 		checkErr(err)
 		t.Execute(w, p)
 	} else {
-		t, _ := template.ParseFiles("go_templates/landing.html")
+		t, _ := template.ParseFiles("templates/landing.html")
 		t.Execute(w, getOauthUrl())
 	}
-	// t, _ := template.ParseFiles("go_templates/hello.html")
+	// t, _ := template.ParseFiles("templates/hello.html")
 	// t.Execute(w, "Luke")
 }
 
@@ -94,7 +93,7 @@ type ExchangeTokenResponse struct {
 func exchangeTokenHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	if (query.Get("scope") != "read,activity:read,activity:read_all") {
-		t, _ := template.ParseFiles("go_templates/invalid_permissions.html")
+		t, _ := template.ParseFiles("templates/invalid_permissions.html")
 		t.Execute(w, getOauthUrl())
 		return
 	}
@@ -154,7 +153,7 @@ func init() {
 
 func main() {
 	// var templates *template.Template
-	// templates = template.Must(templates.ParseGlob("go_templates/*.html"))
+	// templates = template.Must(templates.ParseGlob("templates/*.html"))
 
 	// Static file serving
 	fileServer := http.FileServer(http.Dir("./static"))
