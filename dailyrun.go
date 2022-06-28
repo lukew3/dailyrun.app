@@ -10,6 +10,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/joho/godotenv"
@@ -54,8 +56,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		var p HomePageData
 		err := db.QueryRow("SELECT profile_pic, fullname, cur_streak, streak_start_date FROM users WHERE strava_id = ?", c.Value).Scan(&p.PfpUrl, &p.Fullname, &p.Streak, &p.StartDate)
 		checkErr(err)
-		t, err := template.ParseFiles("templates/home.html")
-		checkErr(err)
+		epochStartDate, _ := strconv.ParseInt(p.StartDate, 10, 64)
+		p.StartDate = time.Unix(epochStartDate, 0).String()[:10]
+		t, _ := template.ParseFiles("templates/home.html")
 		t.Execute(w, p)
 	} else {
 		t, _ := template.ParseFiles("templates/landing.html")
@@ -114,7 +117,7 @@ func exchangeTokenHandler(w http.ResponseWriter, r *http.Request) {
 	if (!userExists(user_data.Athlete.Id)) {
 		stmt, err := db.Prepare("INSERT INTO users(fullname, profile_pic, cur_streak, streak_start_date, last_activity_date, timezone, strava_id, refresh_token, access_token, access_token_exp_date) values(?,?,?,?,?,?,?,?,?,?)")
 		checkErr(err)
-		stmt.Exec(user_data.Athlete.FirstName + " " + user_data.Athlete.LastName, user_data.Athlete.ProfilePic, 0, 0, 0, "America/New_York", user_data.Athlete.Id, user_data.RefreshToken, user_data.AccessToken, user_data.ExpiresAt)
+		stmt.Exec(user_data.Athlete.FirstName + " " + user_data.Athlete.LastName, user_data.Athlete.ProfilePic, 0, time.Now().Unix(), time.Now().Unix(), "America/New_York", user_data.Athlete.Id, user_data.RefreshToken, user_data.AccessToken, user_data.ExpiresAt)
 		streakFromActivities(user_data.Athlete.Id)
 		fmt.Println(user_data)
 	}
