@@ -1,7 +1,6 @@
 CREATE TABLE users (
 	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	"firstname" TEXT,
-	"lastname" TEXT,
+	"fullname" TEXT,
 	"profile_pic" TEXT,
 	"cur_streak" INT DEFAULT 0,
 	"streak_start_date" INT,

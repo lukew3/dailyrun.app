@@ -52,7 +52,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	c, _ := r.Cookie("strava_id")
 	if c != nil {
 		var p HomePageData
-		err := db.QueryRow("SELECT profile_pic, firstname, cur_streak, streak_start_date FROM users WHERE strava_id = ?", c.Value).Scan(&p.PfpUrl, &p.Fullname, &p.Streak, &p.StartDate)
+		err := db.QueryRow("SELECT profile_pic, fullname, cur_streak, streak_start_date FROM users WHERE strava_id = ?", c.Value).Scan(&p.PfpUrl, &p.Fullname, &p.Streak, &p.StartDate)
 		checkErr(err)
 		t, err := template.ParseFiles("templates/home.html")
 		checkErr(err)
@@ -112,9 +112,9 @@ func exchangeTokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Create new user if not previously existing
 	if (!userExists(user_data.Athlete.Id)) {
-		stmt, err := db.Prepare("INSERT INTO users(firstname, lastname, profile_pic, cur_streak, streak_start_date, last_activity_date, timezone, strava_id, refresh_token, access_token, access_token_exp_date) values(?,?,?,?,?,?,?,?,?,?,?)")
+		stmt, err := db.Prepare("INSERT INTO users(fullname, profile_pic, cur_streak, streak_start_date, last_activity_date, timezone, strava_id, refresh_token, access_token, access_token_exp_date) values(?,?,?,?,?,?,?,?,?,?)")
 		checkErr(err)
-		stmt.Exec(user_data.Athlete.FirstName, user_data.Athlete.LastName, user_data.Athlete.ProfilePic, 0, 0, 0, "America/New_York", user_data.Athlete.Id, user_data.RefreshToken, user_data.AccessToken, user_data.ExpiresAt)
+		stmt.Exec(user_data.Athlete.FirstName + " " + user_data.Athlete.LastName, user_data.Athlete.ProfilePic, 0, 0, 0, "America/New_York", user_data.Athlete.Id, user_data.RefreshToken, user_data.AccessToken, user_data.ExpiresAt)
 		streakFromActivities(user_data.Athlete.Id)
 		fmt.Println(user_data)
 	}
