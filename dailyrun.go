@@ -51,7 +51,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	// Get cookie
 	c, _ := r.Cookie("strava_id")
 	if c != nil {
-		p := HomePageData{PfpUrl: "https://lh3.googleusercontent.com/ogw/ADea4I4h8YTg0BoMqjIUw1EKVi_BVNjhR_3YZea2S_cy=s32-c-mo", Fullname: "Luke Weiler", Streak: "40", StartDate: "May 26, 2022"}
+		var p HomePageData
+		err := db.QueryRow("SELECT profile_pic, firstname, cur_streak, streak_start_date FROM users WHERE strava_id = ?", c.Value).Scan(&p.PfpUrl, &p.Fullname, &p.Streak, &p.StartDate)
+		checkErr(err)
 		t, err := template.ParseFiles("templates/home.html")
 		checkErr(err)
 		t.Execute(w, p)
@@ -59,8 +61,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		t, _ := template.ParseFiles("templates/landing.html")
 		t.Execute(w, getOauthUrl())
 	}
-	// t, _ := template.ParseFiles("templates/hello.html")
-	// t.Execute(w, "Luke")
 }
 
 func userExists(strava_id uint32) bool {
