@@ -76,8 +76,43 @@ func userExists(strava_id uint32) bool {
 	return exists
 }
 
+type ActivityResponse struct {
+	StartDateLocal uint32 `json:"start_date_local"`
+	Timezone string `json:"timezone"`
+}
+
+func getActivitiesPage(page int, athlete_token string) {
+	client := &http.Client{
+		Timeout: time.Second * 10,
+	}
+	url := fmt.Sprintf("https://www.strava.com/api/v3/athlete/activities?page=%d&per_page=50", page)
+	req, err := http.NewRequest("GET", url, nil)
+	checkErr(err)
+	req.Header.Set("Authorization", "Bearer " + athlete_token)
+	resp, err := client.Do(req)
+	checkErr(err)
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	fmt.Println(body[0])
+	json.Unmarshal(body, &activities)
+	fmt.Println(activities)
+}
+
 func streakFromActivities(strava_id uint32) {
-	userExists(strava_id)
+	if (!userExists(strava_id)) {
+		return;
+	}
+	// if datetime.datetime.now() > user.access_token_exp_date: refresh_token(user.strava_id)
+	found_streak_end := false
+	page_num := 0
+	// streak := 0
+	// first_iteration := true
+	// last_time := time.Now()
+	for !found_streak_end {
+		page_num++
+		getActivitiesPage(page_num, "s")
+		found_streak_end = true
+	}
 }
 
 type ExchangeTokenResponse struct {
